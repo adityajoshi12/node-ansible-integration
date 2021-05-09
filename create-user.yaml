@@ -1,0 +1,10 @@
+- hosts: ans
+  tasks:
+   - name: create user 
+     ansible.builtin.user:
+      name: toast
+      password: "rKSo09mD/a81."
+      shell: /bin/bash
+      groups: sudo
+  
+# mkpasswd

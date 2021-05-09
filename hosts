@@ -1,0 +1,7 @@
+[ans]
+134.209.151.146 
+[ans:vars]
+ansible_ssh_user=tony
+ansible_ssh_pass=tony
+ansible_become_pass=tony
+ansible_python_interpreter=/usr/bin/python3

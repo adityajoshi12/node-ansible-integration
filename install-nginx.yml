@@ -1,0 +1,14 @@
+---
+- hosts: ans
+  become: True
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+   - name: install nginx
+     apt: 
+       name: nginx
+       state: present
+   - name: restart nginx
+     service:
+        name=nginx
+        state=restarted
