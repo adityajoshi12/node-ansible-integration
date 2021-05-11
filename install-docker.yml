@@ -1,0 +1,19 @@
+- hosts: ans
+  become: true
+  
+  tasks:
+   - name: update
+     apt:  update_cache=yes force_apt_get=yes 
+   - name: Install docker
+     package:
+      name: docker.io
+      state: present
+   - name: Start docker service
+     service:
+      name: docker
+      state: started
+   - name: 'add users to docker group'
+     user:
+        name: 'tony'
+        groups: 'docker'
+        append: 'yes'

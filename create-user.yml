@@ -1,8 +1,10 @@
 - hosts: ans
+  vars: 
+    user: tony
   tasks:
-   - name: create user 
+   - name: create user {{user}}
      ansible.builtin.user:
-      name: toast
+      name: "{{user}}"
       password: "rKSo09mD/a81."
       shell: /bin/bash
       groups: sudo

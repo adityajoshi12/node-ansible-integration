@@ -2,9 +2,9 @@
 - hosts: ans
   remote_user: tony
   tasks:
-          # upload ssh key                
+          # upload ssh key
           - authorized_key:
-                  user: tony
-                  state: present
-                  manage_dir: yes
-                  key: "{{ lookup('file', '/home/aditya/.ssh/id_rsa.pub') }}"
+                    user: tony
+                    state: present
+                    manage_dir: yes
+                    key: "{{ lookup('file', '/home/aditya/.ssh/id_rsa.pub') }}"

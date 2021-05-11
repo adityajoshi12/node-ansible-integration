@@ -1,0 +1,22 @@
+---
+- hosts: ans
+  name: install mongodb
+  become: true
+  tasks:
+  # - name: Import the public key used by the package management system
+  #   shell: |
+  #     wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+      
+  # - shell: echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+  # - shell: sudo apt-get update
+  # - shell: sudo apt-get install -y mongodb-org
+      # sudo systemctl start mongod
+      # sudo systemctl enable mongod
+      # sudo systemctl restart mongod
+  - copy:
+      src: ./mongo.sh
+      dest: ./mongo.sh
+      owner: toast
+      group: sudo
+      mode: 0777
+  - shell: ./mongo.sh
