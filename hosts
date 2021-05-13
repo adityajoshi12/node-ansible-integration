@@ -1,7 +1,7 @@
 [ans]
-xxx.xxx.xxx.xxx
+167.71.238.156
 [ans:vars]
-ansible_ssh_user=root
-ansible_ssh_pass=tony@HD0C
+ansible_ssh_user=tony
+ansible_ssh_pass=tony
 ansible_become_pass=tony
 ansible_python_interpreter=/usr/bin/python3

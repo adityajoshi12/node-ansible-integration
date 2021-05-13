@@ -1,19 +1,48 @@
 - hosts: ans
   become: true
-  
+
   tasks:
-   - name: update
-     apt:  update_cache=yes force_apt_get=yes 
-   - name: Install docker
-     package:
-      name: docker.io
-      state: present
-   - name: Start docker service
-     service:
-      name: docker
-      state: started
-   - name: 'add users to docker group'
-     user:
-        name: 'tony'
-        groups: 'docker'
-        append: 'yes'
+    # - name: Install aptitude using apt
+    #   apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    # - name: Install required system packages
+    #   apt: name={{ item }} state=latest update_cache=yes
+    #   loop:
+    #     [
+    #       "apt-transport-https",
+    #       "ca-certificates",
+    #       "curl",
+    #       "software-properties-common",
+    #       "python3-pip",
+    #       "virtualenv",
+    #       "python3-setuptools",
+    #     ]
+    # - name: updating repository
+    #   apt: update_cache=yes force_apt_get=yes
+    # - name: Install docker
+    #   package:
+    #     name: docker.io
+    #     state: present
+    # - name: Install Docker Module for Python
+    #   pip:
+    #     name: docker
+    # - name: Start docker service
+    #   service:
+    #     name: docker
+    #     state: started
+
+    # - name: Install Docker Module for Python
+    #   pip:
+    #     name: docker
+    - name: "add users to docker group"
+      user:
+        name: "tony"
+        groups: "docker"
+        append: "yes"
+    - name: Install docker-compose
+      apt:
+        name: docker-compose
+        state: present
+    # - name: Install Docker Module for Python
+    #   pip:
+    #     name: docker-compose

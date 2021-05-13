@@ -1,0 +1,145 @@
+- hosts: all
+  become: yes
+  gather_facts: false
+  #remote_user: ubuntu
+
+  #  vars_prompt:
+  #    - name: "Install_Nmap"
+  #      prompt: "Fabdep needs to scan the required ports using Nmap (yes/no)?"
+  #      private: no
+
+  tasks:
+    - name: "Install Nmap"
+      apt: name=nmap state=latest
+    #      when: Install_Nmap | bool
+
+    - name: Check if script is already present
+      file:
+        path: "/tmp/port_scanner.sh"
+        state: absent
+
+    - name: Transfer the script
+      copy:
+        src: ./ports/port_scanner.sh
+        dest: /tmp/port_scanner.sh
+        mode: 0777
+    #      when: Install_Nmap | bool
+
+    - name: Run script
+      command: bash /tmp/port_scanner.sh mode=0777
+      register: ports
+
+    #      when: Install_Nmap | bool
+
+    - name: Ports Status
+      debug:
+        msg: "{{ ports.stdout.split('\n') }}"
+    #      when: Install_Nmap | bool
+    - name: Check if script is already present
+      file:
+        path: "/tmp/ports.txt"
+        state: absent
+
+    - name: copy the output to a local file
+      copy:
+        content: "{{ ports.stdout }}"
+        dest: "/tmp/ports.txt"
+    - name: ports check
+      shell: grep open /tmp/ports.txt
+      register: result
+      failed_when: "'open' in result.stdout"
+- hosts: all
+  become: yes
+  gather_facts: false
+  module_defaults:
+    apt:
+      force_apt_get: yes
+  tasks:
+    - name: Add Kubernetes apt-key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes APT repository
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        filename: "kubernetes"
+
+    - name: Install Docker, APT transport, kubelet, kubeadm, kubectl, nfs
+      apt:
+        name:
+          [
+            "docker.io",
+            "apt-transport-https",
+            "kubelet=1.20.0-00",
+            "kubeadm=1.20.0-00",
+            "kubectl=1.20.0-00",
+            "nfs-kernel-server",
+          ]
+        state: present
+        update_cache: true
+
+    - name: Initialize the Cluster
+      shell: kubeadm init   --apiserver-cert-extra-sans={{ansible_host}} --pod-network-cidr=10.244.0.0/16 >> cluster_initialized.txt
+      args:
+        chdir: $HOME
+        creates: cluster_initialized.txt
+    - name: Create .kube directory
+      file:
+        path: /home/{{ansible_user}}/.kube
+        state: directory
+        mode: 0755
+
+    - name: Copy admin.conf to user's kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ansible_user}}/.kube/config
+        remote_src: yes
+        owner: "{{ansible_user}}"
+
+    - name: Install Pod network
+      become_user: "{{ ansible_user }}"
+      shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.txt
+      args:
+        chdir: $HOME
+        creates: pod_network_setup.txt
+
+    - name: Get join command
+      command: kubeadm token create --print-join-command
+      register: join_command
+
+- hosts: all
+  gather_facts: false
+  vars:
+    cluster_id: "{{ cluster_id }}"
+  tasks:
+    - name: Copy join command to local file
+      local_action:
+        module: file
+        state: directory
+        path: "~/.fabdep/join-command"
+        recurse: yes
+        mode: "u=rwx,g=rx,o=rx"
+
+    - name: Copy join command to local file
+      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="~/.fabdep/join-command/{{ cluster_id }}"
+
+- hosts: all
+  become: yes
+  gather_facts: false
+  vars:
+    nfsexport: "/home/export"
+  tasks:
+    - name: Create mountable dir
+      file:
+        path: "{{nfsexport}}"
+        state: directory
+        mode: 755
+        owner: nobody
+        group: nogroup
+
+    - name: Fetch the .kube/config to local
+      fetch:
+        src: /home/{{ansible_user}}/.kube/config
+        dest: ~/

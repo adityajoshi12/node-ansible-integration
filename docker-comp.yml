@@ -1,8 +1,15 @@
 - hosts: ans
-  become: yes
-  tasks: 
-    - name: Install docker-compose
-      get_url: 
-        url : https://github.com/docker/compose/releases/download/1.25.1-rc1/docker-compose-Linux-x86_64
-        dest: /usr/local/bin/docker-compose
-        mode: 0755
+  vars:
+    - ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    # - name: Install Docker Module for Python
+    #   pip:
+    #     name: docker-compose
+    # - name: copy Docker Compose files
+    #   copy:
+    #     src: ./docker-compose
+    #     dest: /home/{{ansible_user}}/
+    #     mode: 0644
+
+    - name: install wordpress
+      shell: docker-compose up -f ./docker-compose/docker-compose.yaml
